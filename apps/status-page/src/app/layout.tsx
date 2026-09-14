@@ -2,6 +2,7 @@ import { cn } from "@openstatus/ui/lib/utils";
 import type { Metadata } from "next";
 
 import "./globals.css";
+import { getLocale } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import LocalFont from "next/font/local";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -55,13 +56,18 @@ export const metadata: Metadata = defaultMetadata;
 
 // export const dynamic = "error";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={locale === "fa" ? "rtl" : "ltr"}
+      suppressHydrationWarning
+    >
       <body
         className={cn(
           geistSans.variable,

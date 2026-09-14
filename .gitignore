@@ -88,6 +88,12 @@ skills-lock.json
 
 .mcp.json
 
+# Private local operations, database snapshots and deployment credentials
+.local/
+.local-db/
+.deploy-private/
+/apps/status-page/public/fonts/noqte/
+
 tmp
 
 .tinyb

@@ -4,6 +4,7 @@ import {
   StatusBlocksI18nProvider,
   type StatusBlocksLabels,
 } from "@openstatus/ui/components/blocks/status-i18n";
+import { DirectionProvider } from "@radix-ui/react-direction";
 import { useExtracted, useLocale } from "next-intl";
 import { useMemo } from "react";
 
@@ -132,8 +133,10 @@ export function StatusBlocksProvider({
   );
 
   return (
-    <StatusBlocksI18nProvider value={value}>
-      {children}
-    </StatusBlocksI18nProvider>
+    <DirectionProvider dir={locale === "fa" ? "rtl" : "ltr"}>
+      <StatusBlocksI18nProvider value={value}>
+        {children}
+      </StatusBlocksI18nProvider>
+    </DirectionProvider>
   );
 }

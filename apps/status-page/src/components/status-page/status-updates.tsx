@@ -33,7 +33,14 @@ import {
   type FormValues,
 } from "../forms/form-subscribe-email";
 
-export type StatusUpdateType = "email" | "rss" | "ssh" | "json" | "slack";
+export type StatusUpdateType =
+  | "email"
+  | "rss"
+  | "ssh"
+  | "json"
+  | "slack"
+  | "telegram"
+  | "bale";
 
 type Page = NonNullable<RouterOutputs["statusPage"]["get"]>;
 
@@ -103,6 +110,12 @@ export function StatusUpdates({
             {types.includes("ssh") ? (
               <TabsTrigger value="ssh">{t("SSH")}</TabsTrigger>
             ) : null}
+            {types.includes("telegram") ? (
+              <TabsTrigger value="telegram">تلگرام</TabsTrigger>
+            ) : null}
+            {types.includes("bale") ? (
+              <TabsTrigger value="bale">بله</TabsTrigger>
+            ) : null}
           </TabsList>
           <TabsContent value="email" className="flex flex-col gap-2">
             {success ? (
@@ -133,6 +146,18 @@ export function StatusUpdates({
               </>
             )}
           </TabsContent>
+          <TabsContent value="telegram">
+            <MessengerSubscription
+              name="تلگرام"
+              url={process.env.NEXT_PUBLIC_TELEGRAM_STATUS_BOT_URL}
+            />
+          </TabsContent>
+          <TabsContent value="bale">
+            <MessengerSubscription
+              name="بله"
+              url={process.env.NEXT_PUBLIC_BALE_STATUS_BOT_URL}
+            />
+          </TabsContent>
           <TabsContent value="rss">
             <StatusUpdatesRss rssUrl={rssUrl} atomUrl={atomUrl} />
           </TabsContent>
@@ -160,6 +185,36 @@ function SuccessMessage() {
       <p className="text-muted-foreground text-center text-sm">
         {t("Validate your email to receive updates and you are all set.")}
       </p>
+    </div>
+  );
+}
+
+function MessengerSubscription({ name, url }: { name: string; url?: string }) {
+  let href: string | undefined;
+  try {
+    const parsed = new URL(url ?? "");
+    if (parsed.protocol === "https:") href = parsed.href;
+  } catch {
+    href = undefined;
+  }
+  return (
+    <div className="space-y-4 p-4">
+      <p className="text-muted-foreground text-sm leading-7">
+        {href
+          ? `وارد ربات ${name} شوید و با دکمهٔ «اشتراک‌گذاری مخاطب»، شمارهٔ خود را تأیید کنید تا خبرهای اختلال و رفع آن را دریافت کنید.`
+          : `ربات ${name} پس از اشتراک‌گذاری مخاطب، خبرهای اختلال و رفع آن را برای شما می‌فرستد. اتصال ربات هنوز فعال نشده است.`}
+      </p>
+      {href ? (
+        <Button asChild className="w-full">
+          <a href={href} target="_blank" rel="noopener noreferrer">
+            شروع ربات {name}
+          </a>
+        </Button>
+      ) : (
+        <Button disabled className="w-full">
+          به‌زودی
+        </Button>
+      )}
     </div>
   );
 }

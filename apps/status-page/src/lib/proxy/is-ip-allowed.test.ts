@@ -44,4 +44,18 @@ describe("isIpAllowed", () => {
   test("IPv6 range match", () => {
     expect(isIpAllowed("2001:db8::1", ["2001:db8::/32"])).toBe(true);
   });
+  test("malformed client IP and non-CIDR ranges are denied", () => {
+    expect(isIpAllowed("not-an-ip", ["0.0.0.0/0"])).toBe(false);
+    expect(isIpAllowed("10.0.0.1/8", ["10.0.0.0/8"])).toBe(false);
+    expect(isIpAllowed("10.0.0.1", ["10.0.0.1"])).toBe(false);
+  });
+
+  test("address families do not cross-match", () => {
+    expect(isIpAllowed("10.0.0.1", ["::/0"])).toBe(false);
+    expect(isIpAllowed("2001:db8::1", ["0.0.0.0/0"])).toBe(false);
+  });
+  test("IPv4-mapped clients match IPv4 ranges", () => {
+    expect(isIpAllowed("::ffff:10.0.0.5", ["10.0.0.0/24"])).toBe(true);
+    expect(isIpAllowed("::ffff:10.0.1.5", ["10.0.0.0/24"])).toBe(false);
+  });
 });

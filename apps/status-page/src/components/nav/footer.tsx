@@ -17,8 +17,6 @@ import { useEmbed } from "../../hooks/use-embed";
 import { useTRPC } from "../../lib/trpc/client";
 import { Link } from "../common/link";
 import { TimestampHoverCard } from "../content/timestamp-hover-card";
-import { LocaleSwitcher } from "../locale-switcher";
-import { ThemeSwitcher } from "../themes/theme-switcher";
 
 export function Footer({
   className,
@@ -48,8 +46,11 @@ export function Footer({
       className={cn("group-data-[embed=true]/embed:border-t-0", className)}
       {...props}
     >
-      <StatusPageFooterContent className="group-data-[embed=true]/embed:justify-center">
-        <div>
+      <StatusPageFooterContent className="max-w-3xl flex-wrap gap-4 px-4 py-5 group-data-[embed=true]/embed:justify-center sm:px-6">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-foreground text-xs font-medium tracking-wide">
+            نقطه / وضعیت
+          </span>
           {!page.whiteLabel ? (
             <StatusPagePoweredBy>
               <Link
@@ -67,22 +68,19 @@ export function Footer({
             date={new Date(dataUpdatedAt)}
             side="top"
             align="end"
-            className="text-muted-foreground/70 mr-2 flex items-center gap-1.5"
+            className="text-muted-foreground/70 me-2 flex items-center gap-1.5"
           >
             {isMounted ? (
               <>
                 <Clock className="size-3" />
-                <span className="font-mono text-xs">{timezone}</span>
+                <span className="font-mono text-xs">
+                  {timezone === "Asia/Tehran" ? "زمان تهران" : timezone}
+                </span>
               </>
             ) : (
               <Skeleton className="h-4 w-28" />
             )}
           </TimestampHoverCard>
-          <LocaleSwitcher
-            pageLocales={page.locales}
-            pageDefaultLocale={page.defaultLocale}
-          />
-          <ThemeSwitcher />
         </StatusPageFooterActions>
       </StatusPageFooterContent>
     </StatusPageFooter>

@@ -17,7 +17,11 @@ const isSelfHosted = process.env.SELF_HOST === "true";
 
 export default auth(async (req) => {
   const url = req.nextUrl.clone();
-  const passthroughResponse = NextResponse.next();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-noqte-locale", "en");
+  const passthroughResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   // HTML and markdown share the same URL (negotiated by Accept) — tell shared
   // caches to key on it so a markdown variant is never served to a browser.
@@ -27,7 +31,9 @@ export default auth(async (req) => {
   // HTML served via internal rewrite shares its URL with the markdown variant —
   // carry the same Vary as the passthrough so caches don't cross them.
   const rewriteWithVary = (target: URL) => {
-    const response = NextResponse.rewrite(target);
+    const response = NextResponse.rewrite(target, {
+      request: { headers: requestHeaders },
+    });
     response.headers.set("Vary", "Accept");
     return response;
   };
@@ -96,6 +102,8 @@ export default auth(async (req) => {
     _page,
   );
 
+  requestHeaders.set("x-noqte-locale", route.locale);
+
   const clientIp = resolveClientIp(req.headers);
 
   console.log("[proxy] request", {
@@ -139,8 +147,13 @@ export default auth(async (req) => {
       return NextResponse.redirect(action.url);
     case "rewrite":
       return rewriteWithVary(action.url);
-    case "passthrough":
-      return passthroughResponse;
+    case "passthrough": {
+      const response = NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+      response.headers.set("Vary", "Accept");
+      return response;
+    }
   }
 });
 

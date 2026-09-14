@@ -32,26 +32,12 @@ import { useMemo } from "react";
 
 import { Link } from "../../../../../components/common/link";
 import { useStatusPage } from "../../../../../components/status-page/floating-button";
-import {
-  StatusBanner,
-  StatusBannerContainer,
-  StatusBannerContent,
-  StatusBannerTabs,
-  StatusBannerTabsContent,
-  StatusBannerTabsList,
-  StatusBannerTabsTrigger,
-} from "../../../../../components/status-page/status-banner";
+import { StatusBanner } from "../../../../../components/status-page/status-banner";
 import {
   StatusBar,
   StatusBarSkeleton,
 } from "../../../../../components/status-page/status-bar";
 import { StatusComponentGroup } from "../../../../../components/status-page/status-component-group";
-import {
-  StatusEventAffected,
-  StatusEventAffectedBadge,
-  StatusEventTimelineMaintenance,
-  StatusEventTimelineReportUpdate,
-} from "../../../../../components/status-page/status-events";
 import { StatusFeed } from "../../../../../components/status-page/status-feed";
 import { latencyByMonitorId } from "../../../../../data/metrics.client";
 import { useEmbed } from "../../../../../hooks/use-embed";
@@ -171,137 +157,101 @@ export function Client() {
 
   // REMINDER: if we are using the custom configuration, we need to use the pageWithCustomConfiguration
   const page = pageWithCustomConfiguration ?? pageInitial;
+  const latestReport = [...page.statusReports]
+    .filter(
+      (report) =>
+        report.status !== "resolved" && report.statusReportUpdates.length > 0,
+    )
+    .sort(
+      (a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+    )[0];
+  const latestUpdate = latestReport
+    ? [...latestReport.statusReportUpdates].sort(
+        (a, b) => b.date.getTime() - a.date.getTime(),
+      )[0]
+    : undefined;
+  const latestEvent =
+    events.find(
+      (event) => event.type === "report" && event.id === latestReport?.id,
+    ) ?? events[0];
+  const severity =
+    latestEvent?.status === "error"
+      ? "error"
+      : latestEvent?.status === "info"
+        ? "info"
+        : "degraded";
+  const severityLabel =
+    severity === "error"
+      ? "قطعی سرویس"
+      : severity === "info"
+        ? "تعمیر و نگهداری"
+        : "اختلال در عملکرد";
+  const progressLabel = latestUpdate
+    ? {
+        investigating: "در حال بررسی",
+        identified: "شناسایی شده",
+        monitoring: "در حال پایش",
+        resolved: "رفع شده",
+      }[latestUpdate.status]
+    : "در حال پیگیری";
 
   return (
     <div className="flex flex-col gap-6">
       <Status variant={page.status}>
         <StatusHeader className="group-data-[hide-title=true]/embed:hidden">
-          <StatusTitle>{page.title}</StatusTitle>
-          <StatusDescription>{page.description}</StatusDescription>
+          <StatusTitle
+            role="heading"
+            aria-level={1}
+            className="text-xl leading-tight font-semibold sm:text-2xl"
+          >
+            {page.title}
+          </StatusTitle>
+          <StatusDescription className="text-muted-foreground mt-2 max-w-prose text-xs leading-6">
+            {page.description}
+          </StatusDescription>
         </StatusHeader>
         {events.length > 0 ? (
           <StatusContent className="group-data-[hide-banner=true]/embed:hidden">
-            <StatusBannerTabs
-              defaultValue={`${events[0].type}-${events[0].id}`}
+            <section
+              className="noqte-summary overflow-hidden rounded-lg border"
+              data-severity={severity}
+              aria-label="آخرین مشکل"
             >
-              <StatusBannerTabsList>
-                {events.map((e, i) => {
-                  return (
-                    <StatusBannerTabsTrigger
-                      value={`${e.type}-${e.id}`}
-                      status={e.status}
-                      key={`${e.type}-${e.id}`}
-                      className={cn(
-                        i === 0 && "rounded-tl-lg",
-                        i === events.length - 1 && "rounded-tr-lg",
-                      )}
-                    >
-                      {e.name}
-                    </StatusBannerTabsTrigger>
-                  );
-                })}
-              </StatusBannerTabsList>
-              {events.map((e) => {
-                if (e.type === "report") {
-                  const report = page.statusReports.find(
-                    (report) => report.id === e.id,
-                  );
-                  if (!report) return null;
-                  const lastUpdate = report.statusReportUpdates.sort(
-                    (a, b) => b.date.getTime() - a.date.getTime(),
-                  )[0];
-                  if (!lastUpdate) return null;
-                  return (
-                    <StatusBannerTabsContent
-                      value={`${e.type}-${e.id}`}
-                      key={`${e.type}-${e.id}`}
-                    >
-                      <Link
-                        variant="unstyled"
-                        href={`${prefix ? `/${prefix}` : ""}/events/report/${report.id}`}
-                        className="rounded-lg"
-                      >
-                        <StatusBannerContainer status={e.status}>
-                          <StatusBannerContent>
-                            <StatusEventTimelineReportUpdate
-                              report={lastUpdate}
-                              withDot={false}
-                              isLast={true}
-                              withSeparator={false}
-                            />
-                            {report.statusReportsToPageComponents.length > 0 ? (
-                              <StatusEventAffected>
-                                {report.statusReportsToPageComponents.map(
-                                  (affected) => (
-                                    <StatusEventAffectedBadge
-                                      key={affected.pageComponent.id}
-                                    >
-                                      {affected.pageComponent.name}
-                                    </StatusEventAffectedBadge>
-                                  ),
-                                )}
-                              </StatusEventAffected>
-                            ) : null}
-                          </StatusBannerContent>
-                        </StatusBannerContainer>
-                      </Link>
-                    </StatusBannerTabsContent>
-                  );
-                }
-                if (e.type === "maintenance") {
-                  const maintenance = page.maintenances.find(
-                    (maintenance) => maintenance.id === e.id,
-                  );
-                  if (!maintenance) return null;
-                  return (
-                    <StatusBannerTabsContent
-                      value={`${e.type}-${e.id}`}
-                      key={e.id}
-                    >
-                      <Link
-                        variant="unstyled"
-                        href={`${prefix ? `/${prefix}` : ""}/events/maintenance/${maintenance.id}`}
-                        className="rounded-lg"
-                      >
-                        <StatusBannerContainer status={e.status}>
-                          <StatusBannerContent>
-                            <StatusEventTimelineMaintenance
-                              maintenance={maintenance}
-                              withDot={false}
-                            />
-                            {maintenance.maintenancesToPageComponents.length >
-                            0 ? (
-                              <StatusEventAffected>
-                                {maintenance.maintenancesToPageComponents.map(
-                                  (affected) => (
-                                    <StatusEventAffectedBadge
-                                      key={affected.pageComponent.id}
-                                    >
-                                      {affected.pageComponent.name}
-                                    </StatusEventAffectedBadge>
-                                  ),
-                                )}
-                              </StatusEventAffected>
-                            ) : null}
-                          </StatusBannerContent>
-                        </StatusBannerContainer>
-                      </Link>
-                    </StatusBannerTabsContent>
-                  );
-                }
-                if (e.type === "incident") {
-                  return (
-                    <StatusBannerTabsContent
-                      value={`${e.type}-${e.id}`}
-                      key={e.id}
-                    >
-                      <StatusBanner status={e.status} />
-                    </StatusBannerTabsContent>
-                  );
-                }
-                return null;
-              })}
-            </StatusBannerTabs>
+              <div className="noqte-summary-heading flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                <h2 className="text-base font-semibold">
+                  {latestReport?.title ?? latestEvent?.name ?? severityLabel}
+                </h2>
+                <span className="shrink-0 text-xs font-medium">
+                  {severityLabel}
+                </span>
+              </div>
+              <div className="space-y-3 px-5 py-4">
+                <p className="text-sm leading-7">
+                  <strong>{progressLabel}</strong>
+                  {latestUpdate
+                    ? ` — ${latestUpdate.message.length > 280 ? `${latestUpdate.message.slice(0, 280)}…` : latestUpdate.message}`
+                    : " — جزئیات رویداد در تاریخچه در دسترس است."}
+                </p>
+                <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <span>
+                    {latestUpdate
+                      ? new Intl.DateTimeFormat("fa-IR", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                          timeZone: "Asia/Tehran",
+                        }).format(latestUpdate.date) + " · تهران"
+                      : null}
+                  </span>
+                  <a
+                    href="#event-history"
+                    className="underline underline-offset-4"
+                  >
+                    {new Intl.NumberFormat("fa").format(events.length)} رویداد
+                    باز · مشاهدهٔ جزئیات
+                  </a>
+                </div>
+              </div>
+            </section>
           </StatusContent>
         ) : (
           <StatusBanner
@@ -311,7 +261,7 @@ export function Client() {
         )}
         {/* NOTE: check what gap feels right */}
         {page.trackers.length > 0 ? (
-          <StatusContent className="gap-5 group-data-[hide-components=true]/embed:hidden">
+          <StatusContent className="noqte-monitors gap-0 overflow-hidden rounded-lg border group-data-[hide-components=true]/embed:hidden">
             {page.trackers.map((tracker) => {
               if (tracker.type === "component") {
                 const component = tracker.component;
@@ -368,17 +318,14 @@ export function Client() {
           </StatusContent>
         ) : null}
         <Separator className="group-data-[hide-components=true]/embed:hidden group-data-[hide-feed=true]/embed:hidden" />
-        <StatusContent className="group-data-[hide-feed=true]/embed:hidden">
+        <StatusContent
+          id="event-history"
+          className="scroll-mt-6 group-data-[hide-feed=true]/embed:hidden"
+        >
+          <h2 className="mb-4 text-xl font-semibold">تاریخچهٔ رویدادها</h2>
           <StatusFeed
             statusReports={page.statusReports
-              .filter(
-                (report) =>
-                  report.statusReportUpdates.length > 0 &&
-                  page.lastEvents.some(
-                    (event) =>
-                      event.id === report.id && event.type === "report",
-                  ),
-              )
+              .filter((report) => report.statusReportUpdates.length > 0)
               .map((report) => ({
                 ...report,
                 affected: report.statusReportsToPageComponents.map(
@@ -468,7 +415,7 @@ function ComponentCard({
           )}
         </StatusComponentHeaderRight>
       </StatusComponentHeader>
-      <StatusComponentBody>
+      <StatusComponentBody dir="ltr">
         {isLoading ? <StatusBarSkeleton /> : <StatusBar data={data ?? []} />}
         <StatusComponentFooter data={data ?? []} isLoading={isLoading} />
       </StatusComponentBody>

@@ -12,9 +12,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <Suspense>
       <EmbedShell>
-        <StatusPageShell className="group-data-[embed=true]/embed:min-h-0">
-          <Header className="w-full border-b" />
-          <StatusPageMain className="group-data-[embed=true]/embed:mx-0 group-data-[embed=true]/embed:max-w-none">
+        <StatusPageShell className="noqte-status-shell gap-0 group-data-[embed=true]/embed:min-h-0">
+          <Header className="bg-background/95 w-full border-b" />
+          <StatusPageMain className="max-w-3xl px-4 py-8 group-data-[embed=true]/embed:mx-0 group-data-[embed=true]/embed:max-w-none group-data-[embed=true]/embed:p-0 sm:px-6 sm:py-12">
             {children}
           </StatusPageMain>
           <Footer className="w-full border-t" />

@@ -8,7 +8,6 @@ import {
   StatusPageHeaderActions,
   StatusPageHeaderBrand,
   StatusPageHeaderBrandButton,
-  StatusPageHeaderBrandFallback,
   StatusPageHeaderContent,
   StatusPageHeaderNav,
   StatusPageHeaderNavItem,
@@ -37,6 +36,7 @@ import {
   type StatusUpdateType,
   StatusUpdates,
 } from "../status-page/status-updates";
+import { ThemeSwitcher } from "../themes/theme-switcher";
 
 type Page = RouterOutputs["statusPage"]["get"];
 
@@ -58,12 +58,6 @@ function useNav() {
       href: `${prefix ? `/${prefix}` : ""}/events`,
       isActive: pathname.startsWith(`${prefix ? `/${prefix}` : ""}/events`),
     },
-    {
-      key: "monitors",
-      label: t("Monitors"),
-      href: `${prefix ? `/${prefix}` : ""}/monitors`,
-      isActive: pathname.startsWith(`${prefix ? `/${prefix}` : ""}/monitors`),
-    },
   ];
 }
 
@@ -75,11 +69,7 @@ function getStatusUpdateTypes(page: Page): StatusUpdateType[] {
     return ["email"] as const;
   }
 
-  if (page?.workspacePlan === "free") {
-    return ["slack", "rss", "json"] as const;
-  }
-
-  return ["email", "slack", "rss", "json"] as const;
+  return ["email", "telegram", "bale"] as const;
 }
 
 export function Header({
@@ -123,32 +113,30 @@ export function Header({
       className={cn("group-data-[embed=true]/embed:hidden", className)}
       {...props}
     >
-      <StatusPageHeaderContent>
-        {/* NOTE: same width as the `StatusUpdates` button */}
-        <StatusPageHeaderBrand>
-          <div className="flex items-center justify-center">
-            <StatusPageHeaderBrandButton>
-              <Link
-                href={page?.homepageUrl || `/${prefix}`}
-                target={page?.homepageUrl ? "_blank" : undefined}
-                rel={page?.homepageUrl ? "noreferrer" : undefined}
+      <StatusPageHeaderContent className="max-w-3xl gap-2 px-4 py-4 sm:px-6">
+        <StatusPageHeaderBrand className="w-auto md:min-w-36">
+          <StatusPageHeaderBrandButton
+            variant="ghost"
+            className="h-11 w-auto gap-2 border-0 px-1 hover:bg-transparent"
+          >
+            <Link href={`/${prefix}`} aria-label="Noqte status">
+              <span
+                className="noqte-mark h-7 w-7 shrink-0"
+                aria-hidden="true"
+              />
+              <span
+                lang="fa"
+                dir="rtl"
+                className="noqte-wordmark text-xl font-bold"
               >
-                {page?.icon ? (
-                  <img
-                    src={page.icon}
-                    alt={`${page.title} status page`}
-                    className="size-8"
-                  />
-                ) : (
-                  // NOTE: show the first two letters of the title and if its multiple words, show the first letter of the first two words
-                  <StatusPageHeaderBrandFallback title={page?.title} />
-                )}
-              </Link>
-            </StatusPageHeaderBrandButton>
-          </div>
+                نقطه
+              </span>
+              <span className="sr-only">{page?.title}</span>
+            </Link>
+          </StatusPageHeaderBrandButton>
         </StatusPageHeaderBrand>
         <NavDesktop className="hidden md:flex" />
-        <StatusPageHeaderActions>
+        <StatusPageHeaderActions className="min-w-0 md:min-w-36">
           {page?.contactUrl ? (
             <StatusPageGetInTouchIcon>
               <a href={page.contactUrl} target="_blank" rel="noreferrer">
@@ -164,6 +152,7 @@ export function Header({
             }}
             page={page}
           />
+          <ThemeSwitcher className="size-10 shrink-0" />
           <NavMobile className="md:hidden" />
         </StatusPageHeaderActions>
       </StatusPageHeaderContent>
@@ -179,7 +168,11 @@ function NavDesktop({
   return (
     <StatusPageHeaderNav className={className} {...props}>
       {nav.map((item) => (
-        <StatusPageHeaderNavItem key={item.key} isActive={item.isActive}>
+        <StatusPageHeaderNavItem
+          key={item.key}
+          isActive={item.isActive}
+          className="min-h-11 px-3"
+        >
           <NextLink href={item.href}>{item.label}</NextLink>
         </StatusPageHeaderNavItem>
       ))}
@@ -200,7 +193,8 @@ function NavMobile({
         <Button
           variant="secondary"
           size="sm"
-          className={cn("size-8 border", className)}
+          aria-label={t("Menu")}
+          className={cn("size-11 border", className)}
           {...props}
         >
           <Menu />

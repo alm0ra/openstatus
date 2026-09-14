@@ -34,3 +34,107 @@
     border-radius: calc(var(--radius) * 99999999);
   }
 }
+
+.noqte-mark {
+  display: inline-block;
+  background-color: currentColor;
+  mask: url("/brand/noqte.svg") center / contain no-repeat;
+}
+
+.noqte-wordmark {
+  font-family: "Noqte Dana", Tahoma, sans-serif;
+}
+
+@font-face {
+  font-family: "Noqte Yekan";
+  src: url("/fonts/noqte/IRANYekanX-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noqte Yekan";
+  src: url("/fonts/noqte/IRANYekanX-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noqte Yekan";
+  src: url("/fonts/noqte/IRANYekanX-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noqte Dana";
+  src: url("/fonts/noqte/dana-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noqte Dana";
+  src: url("/fonts/noqte/dana-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+html[lang="fa"] body,
+html[lang="fa"] .font-mono,
+html[lang="fa"] .font-sans {
+  font-family: "Noqte Yekan", Tahoma, sans-serif;
+  letter-spacing: normal;
+}
+html[lang="fa"] :is(h1, h2, h3, [role="heading"], button, [data-slot="status-event-title"]) {
+  font-family: "Noqte Dana", "Noqte Yekan", Tahoma, sans-serif;
+  letter-spacing: normal;
+}
+html[lang="fa"] :is(input[type="email"], input[type="url"], pre, code) {
+  direction: ltr;
+  text-align: left;
+}
+html[dir="rtl"] .text-left { text-align: right; }
+html[dir="rtl"] .text-right { text-align: left; }
+
+@media (min-width: 64rem) {
+  html[dir="rtl"] [data-slot="status-event-aside"] {
+    left: auto;
+    right: -8rem;
+  }
+  html[dir="rtl"] [data-slot="status-event-aside"] > div {
+    left: auto;
+    right: 0;
+  }
+}
+html[dir="rtl"] [data-slot="status-event-timeline-message"] {
+  text-align: start;
+  line-height: 1.9;
+}
+
+.noqte-monitors > * {
+  padding: 1.25rem;
+}
+.noqte-monitors > * + * {
+  border-top: 1px solid var(--border);
+}
+#event-history [data-slot="status-event-aside"] {
+  position: static;
+  margin-bottom: 1rem;
+}
+#event-history [data-slot="status-event-aside"] > div {
+  position: static;
+}
+
+.noqte-summary[data-severity="degraded"] { border-color: var(--warning); }
+.noqte-summary[data-severity="error"] { border-color: var(--destructive); }
+.noqte-summary[data-severity="info"] { border-color: var(--info); }
+.noqte-summary[data-severity="degraded"] .noqte-summary-heading { background: color-mix(in oklch, var(--warning) 18%, transparent); }
+.noqte-summary[data-severity="error"] .noqte-summary-heading { background: color-mix(in oklch, var(--destructive) 18%, transparent); }
+.noqte-summary[data-severity="info"] .noqte-summary-heading { background: color-mix(in oklch, var(--info) 18%, transparent); }
+html[lang="fa"] [data-slot="status-bar-card"] { direction: rtl; }

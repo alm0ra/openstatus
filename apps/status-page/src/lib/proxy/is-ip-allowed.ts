@@ -1,18 +1,26 @@
-import IPCIDR from "ip-cidr";
+import { Address4, Address6 } from "ip-address";
 
-/**
- * Checks whether a client IP falls within any of the allowed CIDR ranges.
- * Pure function — no side effects.
- */
+function parseAddress(value: string): Address4 | Address6 {
+  if (!value.includes(":")) return new Address4(value);
+  const address = new Address6(value);
+  return address.address4 ?? address;
+}
+
 export function isIpAllowed(ip: string, allowedRanges: string[]): boolean {
-  // No ranges configured — deny all (defensive: form validation prevents this)
-  if (allowedRanges.length === 0) return false;
+  if (ip.includes("/")) return false;
   return allowedRanges.some((range) => {
+    if (!range.includes("/")) return false;
     try {
-      const cidr = new IPCIDR(range);
-      return cidr.contains(ip);
+      const address = parseAddress(ip);
+      const subnet = parseAddress(range);
+      if (address instanceof Address4 && subnet instanceof Address4) {
+        return address.isInSubnet(subnet);
+      }
+      if (address instanceof Address6 && subnet instanceof Address6) {
+        return address.isInSubnet(subnet);
+      }
+      return false;
     } catch {
-      // Skip malformed ranges rather than crashing the middleware
       return false;
     }
   });

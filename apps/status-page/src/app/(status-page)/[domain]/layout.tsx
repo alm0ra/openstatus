@@ -5,11 +5,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PasswordWrapper } from "../../../components/password-wrapper";
-import {
-  FloatingButton,
-  StatusPageProvider,
-} from "../../../components/status-page/floating-button";
-import { FloatingTheme } from "../../../components/status-page/floating-theme";
+import { StatusPageProvider } from "../../../components/status-page/floating-button";
 import { ThemeProvider } from "../../../components/themes/theme-provider";
 import { statusPageAlternates } from "../../../lib/alternates";
 import { getQueryClient, HydrateClient, trpc } from "../../../lib/trpc/server";
@@ -58,6 +54,7 @@ export default async function Layout({
       <ThemeProvider
         attribute="class"
         defaultTheme={page?.forceTheme ?? "system"}
+        storageKey="noqte-status-theme"
         enableSystem
         disableTransitionOnChange
       >
@@ -70,13 +67,6 @@ export default async function Layout({
           customTheme={page.customTheme}
         >
           {children}
-          <FloatingButton
-            pageId={page?.id}
-            // NOTE: token to avoid showing the floating button to random users
-            // timestamp is our token - it is hard to guess
-            token={page?.createdAt?.getTime().toString()}
-          />
-          <FloatingTheme />
           <Toaster
             toastOptions={{
               classNames: {},
