@@ -2,6 +2,8 @@
 
 Persian status page customization for OpenStatus: RTL layout, Noqte branding, incident severity and duration, component history, and the original theme collection. The initial color scheme follows the operating system; an explicit selection is remembered.
 
+Deployment instructions: [راهنمای استقرار](DEPLOYING.md).
+
 ## Setup
 
 Run the dashboard and status-page applications with a libSQL database. Configure a page with `fa` as its default and only locale, the `default-rounded` theme, `/brand/noqte.svg` as its icon, and a custom domain. Use manual components for an incident-driven page; automated probes additionally require the upstream monitoring services and Tinybird.
