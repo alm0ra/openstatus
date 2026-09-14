@@ -16,7 +16,15 @@ import {
   publicProcedure,
 } from "../../trpc";
 
-const emailClient = new EmailClient({ apiKey: env.RESEND_API_KEY });
+function getEmailClient() {
+  if (!env.RESEND_API_KEY) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "Email delivery is not configured",
+    });
+  }
+  return new EmailClient({ apiKey: env.RESEND_API_KEY });
+}
 
 export const emailRouter = createTRPCRouter({
   /**
@@ -134,7 +142,7 @@ export const emailRouter = createTRPCRouter({
 
         if (!_invitation) return;
 
-        await emailClient.sendTeamInvitation({
+        await getEmailClient().sendTeamInvitation({
           to: _invitation.email,
           token: _invitation.token,
           invitedBy: `${opts.ctx.user.email}`,

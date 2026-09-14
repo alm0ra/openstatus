@@ -3,6 +3,7 @@ import { GoogleIcon } from "@openstatus/icons/brand";
 import { Separator } from "@openstatus/ui/components/ui/separator";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { SearchParams } from "nuqs/server";
 
 import { signIn } from "@/lib/auth";
@@ -32,6 +33,9 @@ export const metadata: Metadata = {
 export default async function Page(props: {
   searchParams: Promise<SearchParams>;
 }) {
+  if (process.env.AUTH_ADMIN_ENABLED === "true") {
+    redirect("/api/auth/signin?callbackUrl=%2Foverview");
+  }
   const searchParams = await props.searchParams;
   const { redirectTo, error } = searchParamsCache.parse(searchParams);
 

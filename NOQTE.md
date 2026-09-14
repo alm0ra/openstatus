@@ -17,3 +17,11 @@ Keep credentials, cluster configuration, database exports, and local operational
 ## Validation
 
 Run `pnpm verify`, the relevant package tests, and `pnpm audit --prod`. The dependency updates address known advisories; they do not constitute an application security audit. IP range matching uses `ip-address` with IPv4, IPv6, mapped-address and malformed-input coverage. Bot tests cover consent, contact identity, encryption, unsubscribe, retries and persistent delivery state.
+
+## Single-admin dashboard
+
+For an isolated self-hosted administrator, set `AUTH_ADMIN_ENABLED=true`, bind `AUTH_ADMIN_USER_ID` to an existing workspace owner, and supply `AUTH_ADMIN_PASSWORD_HASH` through a runtime Secret. The username is `admin`; there is no public registration or password-reset endpoint in this mode. Use a separate `AUTH_SECRET` and hostname from the public page. Sessions use encrypted JWTs with an eight-hour lifetime.
+
+The password format is `scrypt:<32-byte salt in hex>:<64-byte key in hex>` with N=32768, r=8, p=1. Generate a strong random password privately. Rotate the session secret with the password to invalidate existing sessions. Login attempts are capped in-process; add ingress rate limiting on the Auth.js callback routes. Run one admin replica unless a shared rate limiter is configured. Never place the password, hash, or session secret in public configuration.
+
+Production email sign-in uses the configured provider and never prints magic links. Development-only link logging remains available for local development.

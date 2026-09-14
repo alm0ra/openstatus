@@ -13,7 +13,7 @@ const processEnv: Record<string, string | undefined> = process.env;
 
 export const env = createEnv({
   server: {
-    RESEND_API_KEY: z.string().min(1),
+    RESEND_API_KEY: z.string().min(1).optional(),
     NODE_ENV: z.string().prefault("development"),
   },
   runtimeEnv: {

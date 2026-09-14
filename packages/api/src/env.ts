@@ -14,7 +14,7 @@ export const env = createEnv({
     TINYBIRD_URL: z.string().default("https://api.tinybird.co"),
     CHECKER_URL: z.url().default("https://openstatus-checker.fly.dev"),
     TINYBIRD_NOOP: z.stringbool().catch(false),
-    RESEND_API_KEY: z.string(),
+    RESEND_API_KEY: isSelfHost ? z.string().optional() : z.string(),
     CRON_SECRET: z.string(),
     UNKEY_TOKEN: isSelfHost ? z.string().optional() : z.string(),
     UNKEY_API_ID: isSelfHost ? z.string().optional() : z.string(),

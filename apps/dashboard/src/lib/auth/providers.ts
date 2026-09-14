@@ -42,10 +42,13 @@ export const WorkOSProvider = WorkOS({
 });
 
 export const ResendProvider = Resend({
-  apiKey: undefined, // REMINDER: keep undefined to avoid sending emails
-  async sendVerificationRequest(params) {
-    console.log("");
-    console.log(`>>> Magic Link: ${params.url}`);
-    console.log("");
-  },
+  apiKey: process.env.RESEND_API_KEY,
+  from: process.env.AUTH_EMAIL_FROM,
+  ...(process.env.NODE_ENV === "development"
+    ? {
+        async sendVerificationRequest(params: { url: string }) {
+          console.log(`>>> Magic Link: ${params.url}`);
+        },
+      }
+    : {}),
 });

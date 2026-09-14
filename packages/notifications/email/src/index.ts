@@ -6,6 +6,11 @@ import { regionDict } from "@openstatus/regions";
 
 import { env } from "../env";
 
+function getEmailClient() {
+  if (!env.RESEND_API_KEY) throw new Error("Email delivery is not configured");
+  return new EmailClient({ apiKey: env.RESEND_API_KEY });
+}
+
 export const sendAlert = async ({
   monitor,
   notification,
@@ -17,7 +22,7 @@ export const sendAlert = async ({
 }: NotificationContext) => {
   // Convert regions array to single region for backwards compatibility
   const region = regions?.[0] as Region | undefined;
-  const emailClient = new EmailClient({ apiKey: env.RESEND_API_KEY });
+  const emailClient = getEmailClient();
 
   const config = emailDataSchema.safeParse(JSON.parse(notification.data));
 
@@ -46,7 +51,7 @@ export const sendRecovery = async ({
 }: NotificationContext) => {
   // Convert regions array to single region for backwards compatibility
   const region = regions?.[0] as Region | undefined;
-  const emailClient = new EmailClient({ apiKey: env.RESEND_API_KEY });
+  const emailClient = getEmailClient();
 
   const config = emailDataSchema.safeParse(JSON.parse(notification.data));
 
@@ -74,7 +79,7 @@ export const sendDegraded = async ({
 }: NotificationContext) => {
   // Convert regions array to single region for backwards compatibility
   const region = regions?.[0] as Region | undefined;
-  const emailClient = new EmailClient({ apiKey: env.RESEND_API_KEY });
+  const emailClient = getEmailClient();
 
   const config = emailDataSchema.safeParse(JSON.parse(notification.data));
 

@@ -6,6 +6,24 @@ const useNucleoIcons = process.env.ICON_SET === "nucleo";
 
 const nextConfig: NextConfig = {
   output: process.env.SELF_HOST === "true" ? "standalone" : undefined,
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Referrer-Policy", value: "same-origin" },
+          {
+            key: "Content-Security-Policy",
+            value:
+              "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+          },
+        ],
+      },
+    ];
+  },
   experimental: {
     // barrel-optimize only when unaliased — the rewrite would bypass the nucleo alias
     optimizePackageImports: useNucleoIcons ? [] : ["@openstatus/icons"],

@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { cache } from "react";
 
 import { adapter } from "./adapter";
+import { AdminProvider, adminLoginEnabled } from "./admin";
 import { logger } from "./logger";
 import {
   GitHubProvider,
@@ -51,18 +52,24 @@ const {
   auth: nextAuth,
 } = NextAuth({
   // debug: true,
-  adapter,
+  adapter: adminLoginEnabled ? undefined : adapter,
+  session: adminLoginEnabled
+    ? { strategy: "jwt", maxAge: 8 * 60 * 60 }
+    : undefined,
   logger,
-  providers: [
-    GitHubProvider,
-    GoogleProvider,
-    ...(process.env.AUTH_OIDC_ISSUER ? [OIDCProvider] : []),
-    ...(hasWorkOS ? [WorkOSProvider] : []),
-    ...(process.env.NODE_ENV === "development" ||
-    process.env.SELF_HOST === "true"
-      ? [ResendProvider]
-      : []),
-  ],
+  providers: adminLoginEnabled
+    ? [AdminProvider]
+    : [
+        GitHubProvider,
+        GoogleProvider,
+        ...(process.env.AUTH_OIDC_ISSUER ? [OIDCProvider] : []),
+        ...(hasWorkOS ? [WorkOSProvider] : []),
+        ...(process.env.NODE_ENV === "development" ||
+        (process.env.SELF_HOST === "true" &&
+          Boolean(process.env.RESEND_API_KEY))
+          ? [ResendProvider]
+          : []),
+      ],
   callbacks: {
     async redirect({ url, baseUrl }) {
       // Allow relative URLs, but not protocol-relative `//evil.com` which the
@@ -83,6 +90,7 @@ const {
       return baseUrl;
     },
     async signIn(params) {
+      if (adminLoginEnabled) return params.account?.provider === "credentials";
       // We keep updating the user info when we loggin in
 
       if (params.account?.provider === "google") {
@@ -142,7 +150,14 @@ const {
 
       return true;
     },
+    async jwt({ token, user }) {
+      if (adminLoginEnabled && user) token.sub = String(user.id);
+      return token;
+    },
     async session(params) {
+      if (adminLoginEnabled && "token" in params && params.session.user) {
+        params.session.user.id = params.token.sub ?? "";
+      }
       return params.session;
     },
   },
@@ -174,6 +189,7 @@ const {
     },
 
     async signIn(params) {
+      if (adminLoginEnabled) return;
       if (params.account?.provider === "workos") {
         const { organization_id: organizationId } = readWorkOSProfile(
           params.profile,
@@ -197,10 +213,12 @@ const {
       await analytics.track(Events.SignInUser);
     },
   },
-  pages: {
-    signIn: "/login",
-    newUser: "/onboarding",
-  },
+  pages: adminLoginEnabled
+    ? {}
+    : {
+        signIn: "/login",
+        newUser: "/onboarding",
+      },
   // basePath: "/api/auth", // default is `/api/auth`
   // secret: process.env.AUTH_SECRET, // default is `AUTH_SECRET`
   debug: process.env.NODE_ENV === "development",
