@@ -23,7 +23,10 @@ import { registerStatusReportTools } from "./tools/status-report";
  * Static tool list (`listChanged: false`); no prompts. Resources are the
  * public documents from `./resources` — they carry no workspace data.
  */
-export function createMcpServer(ctx: ServiceContext): McpServer {
+export function createMcpServer(
+  ctx: ServiceContext,
+  options: { statusOnly?: boolean } = {},
+): McpServer {
   const server = new McpServer(
     { name: "openstatus", version: packageJson.version },
     { capabilities: { tools: { listChanged: false } } },
@@ -32,6 +35,7 @@ export function createMcpServer(ctx: ServiceContext): McpServer {
   registerPageTools(server, ctx);
   registerStatusReportTools(server, ctx);
   registerMaintenanceTools(server, ctx);
+  if (options.statusOnly) return server;
   registerMonitorTools(server, ctx);
   registerNotificationTools(server, ctx);
   registerPrivateLocationTools(server, ctx);

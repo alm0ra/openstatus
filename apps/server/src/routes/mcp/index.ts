@@ -6,6 +6,7 @@ import { resourceMetadataUrl } from "@openstatus/services/oauth";
 import { Hono } from "hono";
 import type { Context } from "hono";
 
+import { env } from "../../env";
 import { handleError } from "../../libs/errors";
 import { authMiddleware } from "../../libs/middlewares/auth";
 import type { Variables } from "../../types";
@@ -144,7 +145,7 @@ mcpRoute.all("/", async (c) => {
     }
   }
 
-  trackMcpRequest(c, workspace, parsedBody);
+  if (env.SELF_HOST !== "true") trackMcpRequest(c, workspace, parsedBody);
 
   // Stateless mode: a fresh `McpServer` + transport per request. Both
   // are local to this scope and become garbage-collectable once the
@@ -154,6 +155,7 @@ mcpRoute.all("/", async (c) => {
   // empty response to the client.
   const server = createMcpServer(
     toServiceCtx({ workspace, apiKey: c.get("apiKey"), requestId }),
+    { statusOnly: env.MCP_STATUS_ONLY === "true" },
   );
   const transport = new StreamableHTTPTransport();
   try {

@@ -218,6 +218,13 @@ export async function validateKey(key: string): Promise<{
         };
       }
 
+      if (env.SELF_HOST === "true") {
+        return {
+          result: { valid: false },
+          error: { message: "Invalid API Key" },
+        };
+      }
+
       // 2. Fall back to Unkey (transition period). Unkey-validated
       // keys predate the scopes column, so they carry the legacy
       // posture (`write`). When/if Unkey gets RBAC metadata, plumb

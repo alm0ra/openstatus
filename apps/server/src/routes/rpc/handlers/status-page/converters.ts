@@ -310,6 +310,8 @@ const DB_LOCALE_TO_PROTO: Record<Locale, ProtoLocale> = {
   hi: ProtoLocale.HI,
   ko: ProtoLocale.KO,
   ja: ProtoLocale.JA,
+  // The upstream protobuf enum cannot represent Persian yet.
+  fa: ProtoLocale.UNSPECIFIED,
 };
 
 const PROTO_LOCALE_TO_DB: Record<ProtoLocale, Locale | null> = {

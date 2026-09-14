@@ -4,6 +4,8 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
+    SELF_HOST: z.string().optional(),
+    MCP_STATUS_ONLY: z.string().optional(),
     UNKEY_API_ID: z.string().min(1),
     UNKEY_TOKEN: z.string().min(1),
     TINY_BIRD_API_KEY: z.string().min(1),

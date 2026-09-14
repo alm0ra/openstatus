@@ -16,6 +16,12 @@
       ],
       "@modelcontextprotocol/sdk/types.js": [
         "./node_modules/@modelcontextprotocol/sdk/dist/esm/types.d.ts"
+      ],
+      "@modelcontextprotocol/sdk/client/index.js": [
+        "./node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.d.ts"
+      ],
+      "@modelcontextprotocol/sdk/inMemory.js": [
+        "./node_modules/@modelcontextprotocol/sdk/dist/esm/inMemory.d.ts"
       ]
     }
   }
